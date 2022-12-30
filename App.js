@@ -1,64 +1,104 @@
 import { StatusBar } from "expo-status-bar";
-import { Text } from "react-native";
+import { Alert, Text, TextInput } from "react-native";
 import styled from "@emotion/native";
 import { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 
 export default function App() {
-  const [text, onChangeText] = useState("");
-  const [toggleBtn, setToggleBtn] = useState({
-    name: "",
-    onPress: false,
-  });
+ 
+  //add todo
 
-  const toggleHanler = (name) => {
-    setToggleBtn({ ...toggleBtn, name: name, onPress: true });
+  // input 창에서 엔터 누르면 todo 추가
+
+  const [todos,setTodos] = useState([]);
+  const [category,setCategory] = useState('js')
+  const [list, setList] = useState('')
+  const newTodo = {
+    id : Date.now(),
+    list,
+    isDone: false,
+    isEdit:false,
+    category
+  }
+
+  const addTodo= () => {
+    setTodos((prev)=>[...prev,newTodo]);
+    setList('');
+  }
+  const setDone = (id)=> {
+    const newList = [...todos];
+    const idx = newList.findIndex((todo)=>todo.id === id);
+    newList[idx].isDone = !newList[idx].isDone;
+    setTodos(newList);
   };
+
+  const deleteList = (id)=>{
+    Alert.alert("Todo 삭제", "정말 삭제 하시겠습니까?",[
+      {
+      text:"취소",
+      style:"cancel",
+      onPress:()=>console.log("취소 클릭")
+    },
+    {
+      text:"삭제",
+      style:"destructive",
+      onPress:()=>{
+        const newLists = todos.filter(el=> el.id !== id);
+        setTodos(newLists)}
+    },
+  ])}
+
+  const isEdit = (id) => {
+    const newList = [...todos];
+    const idx = newList.findIndex((todo)=>todo.id === id);
+    newList[idx].isEdit = !newList[idx].isEdit;
+    setTodos(newList);
+  }
+
+
 
   return (
     <StView>
+      <StatusBar style="auto" />
+      {/* 카테고리 */}
       <StBtnBox>
-        <StToggleBtn background={toggleBtn.name === "Javascript" && toggleBtn.onPress ? "yellow" : "gray"} onPress={() => toggleHanler("Javascript")}>
+        <StToggleBtn  background={category === "js"  ? "yellow" : "gray"} onPress={() => setCategory("js")}>
           <Text>Javascript</Text>
         </StToggleBtn>
-        <StToggleBtn background={toggleBtn.name === "React" && toggleBtn.onPress ? "yellow" : "gray"} onPress={() => toggleHanler("React")}>
+        <StToggleBtn background={category === "re" ? "yellow" : "gray"} onPress={() => setCategory("re")}>
           <Text>React</Text>
         </StToggleBtn>
-        <StToggleBtn background={toggleBtn.name === "Coding Test" && toggleBtn.onPress ? "yellow" : "gray"} onPress={() => toggleHanler("Coding Test")}>
+        <StToggleBtn background={category === "ct"? "yellow" : "gray"} onPress={() => setCategory("ct")}>
           <Text>Coding Test</Text>
         </StToggleBtn>
+        {/* input box */}
       </StBtnBox>
-      <StTextInput placeholder="할일을 입력해주세요" onChangeText={onChangeText} value={text} />
+      <StTextInput placeholder="할일을 입력해주세요" value={list} onSubmitEditing={addTodo} onChangeText={setList}   />
       <StatusBar style="auto" />
+      {/* list  */}
       <StScrollView>
-        <TodoList>
-          <Text>신나는 실행컨텍스트 공부</Text>
-          <TDLBtnBox>
-            <TDLBtn>
-              <FontAwesome name="check-square" size={33} color="black" />
-            </TDLBtn>
-            <TDLBtn>
-              <FontAwesome name="pencil-square" size={33} color="black" />
-            </TDLBtn>
-            <TDLBtn>
-              <FontAwesome name="trash" size={33} color="black" />
-            </TDLBtn>
-          </TDLBtnBox>
-        </TodoList>
-        <TodoList>
-          <Text>너무 좋은 ES6 최신문법 공부</Text>
-          <TDLBtnBox>
-            <TDLBtn>
-              <FontAwesome name="check-square" size={33} color="black" />
-            </TDLBtn>
-            <TDLBtn>
-              <FontAwesome name="pencil-square" size={33} color="black" />
-            </TDLBtn>
-            <TDLBtn>
-              <FontAwesome name="trash" size={33} color="black" />
-            </TDLBtn>
-          </TDLBtnBox>
-        </TodoList>
+      {todos.map((e)=>{
+        if(category === e.category){
+          return(
+            <TodoList key={e.id}>
+              <Text style={{textDecorationLine: e.isDone ? "line-through":"none"}}>{e.list}</Text>
+              <TDLBtnBox>
+                <TDLBtn onPress={()=> setDone(e.id)}>
+                  <FontAwesome name="check-square" size={33} color="black" />
+                </TDLBtn>
+                <TDLBtn onPress={()=>isEdit(e.id)}>
+                  <FontAwesome name="pencil-square" size={33} color="black" />
+                </TDLBtn>
+                <TDLBtn onPress={()=> deleteList(e.id)}>
+                  <FontAwesome name="trash" size={33} color="black" />
+                </TDLBtn>
+              </TDLBtnBox>
+            </TodoList>
+          )
+        }
+        
+          })}
+        
       </StScrollView>
     </StView>
   );
