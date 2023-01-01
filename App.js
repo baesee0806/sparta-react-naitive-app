@@ -13,6 +13,7 @@ export default function App() {
   const [todos,setTodos] = useState([]);
   const [category,setCategory] = useState('js')
   const [list, setList] = useState('')
+  const [editText,setEditText] = useState('')
   const newTodo = {
     id : Date.now(),
     list,
@@ -55,6 +56,13 @@ export default function App() {
     setTodos(newList);
   }
 
+  const editTodo =(id)=>{
+    const newTodos = [...todos];
+    const idx = newTodos.findIndex(todo=> todo.id ===id);
+    newTodos[idx].list = editText;
+    newTodos[idx].isEdit = false;
+    setTodos(newTodos);
+  }
 
 
   return (
@@ -81,14 +89,17 @@ export default function App() {
         if(category === e.category){
           return(
             <TodoList key={e.id}>
-              <Text style={{textDecorationLine: e.isDone ? "line-through":"none"}}>{e.list}</Text>
+              {e.isEdit ? <EditWrite value={editText} onChangeText={setEditText} onSubmitEditing={()=>editTodo(e.id)}></EditWrite>:<Text style={{textDecorationLine: e.isDone ? "line-through":"none"}}>{e.list}</Text>}
               <TDLBtnBox>
+                {/* done */}
                 <TDLBtn onPress={()=> setDone(e.id)}>
                   <FontAwesome name="check-square" size={33} color="black" />
                 </TDLBtn>
+                {/* edit */}
                 <TDLBtn onPress={()=>isEdit(e.id)}>
                   <FontAwesome name="pencil-square" size={33} color="black" />
                 </TDLBtn>
+                {/* delete */}
                 <TDLBtn onPress={()=> deleteList(e.id)}>
                   <FontAwesome name="trash" size={33} color="black" />
                 </TDLBtn>
@@ -98,7 +109,6 @@ export default function App() {
         }
         
           })}
-        
       </StScrollView>
     </StView>
   );
@@ -161,4 +171,9 @@ const TDLBtnBox = styled.View`
 
 const TDLBtn = styled.TouchableOpacity`
   margin-right: 8px;
+`;
+
+const EditWrite = styled.TextInput`
+background : white;
+flex: 0.8;
 `;
